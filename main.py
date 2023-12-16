@@ -73,7 +73,7 @@ async def forward_new_notes(bot: telegram.Bot):
     )
     # forward new notes
     for n in reversed(notes):
-        if n.createdAt > LATEST_NOTE_TIME:
+        if n.createdAt > LATEST_NOTE_TIME and n.replyId == None:
             LATEST_NOTE_TIME = n.createdAt
             # forward
             if len(n.files) == 0:

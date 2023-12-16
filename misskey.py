@@ -41,6 +41,7 @@ def get_notes(site: str, user_id: str) -> dict:
         if "renote" in n:
             # Handle renote
             note = Note()
+            note.replyId = n['replyId']
             renote = n['renote']
             note.createdAt = parser.parse(n["createdAt"])
             note.text = f"<b>Renote from user {renote['user']['name']}</b>:\n{renote['text']}"
@@ -55,6 +56,7 @@ def get_notes(site: str, user_id: str) -> dict:
         else:
             # normal note
             note = Note()
+            note.replyId = n['replyId']
             note.createdAt = parser.parse(n["createdAt"])
             note.text = n["text"]
             note.files = []

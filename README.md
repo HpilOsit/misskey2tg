@@ -2,6 +2,8 @@
 
 A simple python program that forward Misskey notes to Telegram Channel.
 
+Your replies will NOT be forwarded.
+
 ## Usage
 
 - Clone the repository.
