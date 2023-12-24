@@ -44,9 +44,20 @@ def get_notes(site: str, user_id: str) -> dict:
             # Handle renote
             note = Note()
             note.replyId = n['replyId']
+            note.cw = n['cw']
             renote = n['renote']
             note.createdAt = parser.parse(n["createdAt"])
-            note.text = f"<b>Renote from user {renote['user']['name']}</b>:\n{renote['text']}"
+
+            if note.cw != None: 
+                text = f"<b>Renote from user {renote['user']['name']}</b>:\n{renote['text']}"
+                lines =  text.splitlines()
+                lines.insert(1, "\nCW: " + note.cw + "\n\n")
+                lines.insert(2, "<tg-spoiler>")
+                lines.insert(len(lines) - 1, "</tg-spoiler>")
+                note.text = ''.join(lines)
+            else: 
+                note.text = f"<b>Renote from user {renote['user']['name']}</b>:\n\n{renote['text']}"
+
             note.files = []
             for f in renote["files"]:
                 file = {
@@ -59,8 +70,16 @@ def get_notes(site: str, user_id: str) -> dict:
             # normal note
             note = Note()
             note.replyId = n['replyId']
+            note.cw = n['cw']
             note.createdAt = parser.parse(n["createdAt"])
-            note.text = n["text"]
+            if note.cw != None: 
+                lines =  n["text"].splitlines()
+                lines.insert(1, "\nCW: " + note.cw + "\n\n")
+                lines.insert(2, "<tg-spoiler>")
+                lines.insert(len(lines) - 2, "</tg-spoiler>\n\n")
+                note.text = "".join(lines)
+            else: 
+                note.text = n["text"]
             note.files = []
             for f in n["files"]:
                 file = {

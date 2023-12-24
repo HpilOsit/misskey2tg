@@ -29,13 +29,14 @@ LATEST_NOTE_TIME = datetime.now().replace(tzinfo=timezone.utc)
 bot = telegram.Bot(token=TOKEN)
 
 
-async def get_medias(files, temp_dir):
+async def get_medias(files, temp_dir, spoiler):
     medias = []
     for file in files:
         if file["type"].startswith("image"):
             medias.append(
                 telegram.InputMediaPhoto(
-                    media=file["url"]
+                    media=file["url"],
+                    has_spoiler=spoiler,
                 )
             )
         elif file["type"].startswith("video"):
@@ -45,7 +46,8 @@ async def get_medias(files, temp_dir):
                 logging.error("Failed to transfer video. Falling back...")
                 medias.append(
                 telegram.InputMediaVideo(
-                    file["url"]
+                    file["url"],
+                    has_spoiler=spoiler,
                     )
                 )
                 continue
@@ -59,13 +61,15 @@ async def get_medias(files, temp_dir):
         else:
             medias.append(
                 telegram.InputMediaDocument(
-                    media=file["url"]
+                    media=file["url"],
+                    has_spoiler=spoiler,
                 )
             )
     return medias
 
 
 async def forward_new_notes(bot: telegram.Bot):
+    print(".")
     global LATEST_NOTE_TIME
     notes = misskey.get_notes(
         site=HOST,
@@ -74,6 +78,7 @@ async def forward_new_notes(bot: telegram.Bot):
     # forward new notes
     for n in reversed(notes):
         if n.createdAt > LATEST_NOTE_TIME and n.replyId == None:
+            logging.info("New Note Detected.")
             LATEST_NOTE_TIME = n.createdAt
             # forward
             if len(n.files) == 0:
@@ -86,7 +91,7 @@ async def forward_new_notes(bot: telegram.Bot):
                     f"Forwarded a text note, content: {n.text[:10]}...")
             else:
                 with tempfile.TemporaryDirectory() as temp_dir:
-                    medias = await get_medias(n.files, temp_dir)
+                    medias = await get_medias(n.files, temp_dir, n.cw != None)
                     success = False
                     for i in range(3):
                         try:
@@ -108,6 +113,7 @@ async def forward_new_notes(bot: telegram.Bot):
                     if success:
                         logging.info(
                             f"Forwarded a note with media, content: {n.text[:10]}... with {len(medias)} medias")
+    print("|")
 
 
 async def main():
