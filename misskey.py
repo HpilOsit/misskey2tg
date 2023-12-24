@@ -7,6 +7,8 @@ from datetime import *
 class Note:
     createdAt: datetime
     text: str
+    replyId: str
+    cw: str
     files: [
         {
             "type": str,
