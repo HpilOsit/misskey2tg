@@ -6,7 +6,7 @@ on:
     types: ["published"]
 
 env:
-  REGISTRY_IMAGE: laoliu233/misskey-telegram-forwarder
+  REGISTRY_IMAGE: hpilosit/misskey-telegram-forwarder
 
 jobs:
   build:
