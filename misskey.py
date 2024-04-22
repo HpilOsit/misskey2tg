@@ -49,14 +49,14 @@ def get_notes(site: str, user_id: str) -> dict:
             note.createdAt = parser.parse(n["createdAt"])
 
             if note.cw != None: 
-                text = f"{renote['text']}\n\n From <b><i><a href=\"https://t.me/ChuangBian/\">窓 辺</a></i></b>\n    Author: {renote['user']['name']}"
+                text = f"{renote['text']}\n\n From <b><i><a href=\"https://t.me/ChuangBian/\">窓 辺</a></i></b>\n    Author: <b>{renote['user']['name']}</b>"
                 lines =  text.splitlines()
                 lines.insert(1, "\nCW: " + note.cw + "\n\n")
                 lines.insert(2, "<tg-spoiler>")
                 lines.insert(len(lines) - 1, "</tg-spoiler>")
                 note.text = ''.join(lines)
             else: 
-                note.text = f"{renote['text']}\n\n From <tg-spoiler><b><i><a href=\"https://t.me/ChuangBian/\">窓 辺</a></i></b></tg-spoiler>\n    Author: {renote['user']['name']}"
+                note.text = f"{renote['text']}\n\n From <b><i><a href=\"https://t.me/ChuangBian/\">窓 辺</a></i></b>\n    Author: <b>{renote['user']['name']}</b>"
 
             note.files = []
             for f in renote["files"]:
