@@ -42,6 +42,11 @@ def get_notes(site: str, user_id: str) -> dict:
     for n in res:
         if "renote" in n:
             # Handle renote
+
+            misskey_id = renote['id']  # 假设这是获取唯一标识符的方式
+            misskey_url = f"https://misskey.io/notes/{misskey_id}"
+            via_text = f"nnvia <a href="{misskey_url}">misskey</a>"
+  
             note = Note()
             note.replyId = n['replyId']
             note.cw = n['cw']
@@ -50,13 +55,16 @@ def get_notes(site: str, user_id: str) -> dict:
 
             if note.cw != None: 
                 text = f"\n{renote['text']}"
+                
+                note.text += via_text
+                
                 lines =  text.splitlines()
                 lines.insert(1, "\nCW: " + note.cw + "\n\n")
                 lines.insert(2, "<tg-spoiler>")
                 lines.insert(len(lines) - 1, "</tg-spoiler>")
                 note.text = ''.join(lines)
             else: 
-                note.text = f"{renote['text']}"
+                note.text = f"{renote['text']}{via_text}/n/n{renote['user']['name']}"
 
             note.files = []
             for f in renote["files"]:
@@ -68,18 +76,26 @@ def get_notes(site: str, user_id: str) -> dict:
             notes.append(note)
         else:
             # normal note
+
+            misskey_id = n['id']  # 假设每个笔记都有一个ID字段
+            misskey_url = f"https://misskey.io/notes/{misskey_id}"
+            via_text = f"nnvia <a href="{misskey_url}">misskey</a>"
+    
             note = Note()
             note.replyId = n['replyId']
             note.cw = n['cw']
             note.createdAt = parser.parse(n["createdAt"])
             if note.cw != None: 
+            
+                note.text += via_text
+
                 lines =  n["text"].splitlines()
                 lines.insert(1, "\nCW: " + note.cw + "\n\n")
                 lines.insert(2, "<tg-spoiler>")
                 lines.insert(len(lines) - 2, "</tg-spoiler>\n\n")
                 note.text = "".join(lines)
             else: 
-                note.text = n["text"]
+                note.text = n["text"]+ via_text
             note.files = []
             for f in n["files"]:
                 file = {
