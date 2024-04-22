@@ -1,4 +1,4 @@
-# Misskey -> Telegram Forwarder
+# Misskey renotes -> Telegram Forwarder
 
 A simple python program that forward Misskey notes to Telegram Channel.
 
