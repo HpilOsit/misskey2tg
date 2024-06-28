@@ -1,4 +1,4 @@
-name: Build Docker Image And Publish first 
+name: Build Docker Image And Publish 
 
 on:
   workflow_dispatch:
