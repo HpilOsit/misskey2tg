@@ -49,7 +49,7 @@ def get_notes(site: str, user_id: str) -> dict:
             note.createdAt = parser.parse(n["createdAt"])
 
             if note.cw != None: 
-                text = f"{renote['text']}\n\n From <b><i><a href=\"https://t.me/0/\">0</a></i></b>\n    Author: <b>{renote['user']['name']}</b>"
+                text = f"<code>❀Title : </code><b>{renote['text']}</b>\n\n<code>❀Artist : </code><b><a href=\"https://t.me/chuangbian/\">{renote['user']['name']}</a></b>"
                 lines =  text.splitlines()
                 lines.insert(1, "\nCW: " + note.cw + "\n\n")
                 lines.insert(2, "<tg-spoiler>")
