@@ -56,7 +56,7 @@ def get_notes(site: str, user_id: str) -> dict:
                 lines.insert(len(lines) - 1, "</tg-spoiler>")
                 note.text = ''.join(lines)
             else: 
-                note.text = f"{renote['text']}\n\n From <b><i><a href=\"https://t.me/0/\">0</a></i></b>\n    Author: <b>{renote['user']['name']}</b>"
+                note.text = f"<code>❀Title : </code><b>{renote['text']}</b>\n\n<code>❀Artist : </code><b><a href=\"https://t.me/chuangbian/\">{renote['user']['name']}</a></b>"
 
             note.files = []
             for f in renote["files"]:
