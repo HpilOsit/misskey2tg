@@ -44,7 +44,7 @@ def get_notes(site: str, user_id: str) -> list:
  
             text = (
                 f"<code>❀Title : </code><b>{renote['text']}</b>\n\n"
-                f"<code>❀Artist : </code><b><a href=\"https://t.me/ChuangBian/\">{renote['user']['name']}</a></b>"
+                f"<code>❀Artist : </code><b><a href=\"https://t.me/ChuangBian/\">{renote['user']['name']}</a></b>\n\n"
                 f"► <b><a href=\"https://t.me/ChuangBian/5/\">ᴍɪꜱꜱᴋᴇʏ</a></b>"
             )
             note.text = text
