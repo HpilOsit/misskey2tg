@@ -1,7 +1,7 @@
 import requests
 import json
 from dateutil import parser
-from datetime import *
+from datetime import datetime
 
 
 class Note:
@@ -9,12 +9,7 @@ class Note:
     text: str
     replyId: str
     cw: str
-    files: [
-        {
-            "type": str,
-            "url": str,
-        }
-    ]
+    files: list
 
 
 def _get_raw_notes(site: str, user_id: str):
@@ -24,8 +19,8 @@ def _get_raw_notes(site: str, user_id: str):
     }
     req_header = {
         "User-Agent": "MisskeyTelegramForwarder",
-        'Content-type':'application/json', 
-        'Accept':'*/*'
+        'Content-type': 'application/json',
+        'Accept': '*/*'
     }
     res = requests.post(
         url=f"{site}/api/users/notes",
@@ -35,57 +30,35 @@ def _get_raw_notes(site: str, user_id: str):
     return json.loads(res.content)
 
 
-def get_notes(site: str, user_id: str) -> dict:
+def get_notes(site: str, user_id: str) -> list:
     res = _get_raw_notes(site, user_id)
-    # do some clean up
-    notes: [Note] = []
+    notes = []
     for n in res:
         if "renote" in n:
-            # Handle renote
             note = Note()
             note.replyId = n['replyId']
             note.cw = n['cw']
             renote = n['renote']
             note.createdAt = parser.parse(n["createdAt"])
 
-            if note.cw != None: 
-                text = f"<code>❀Title : </code><b>{renote['text']}</b>\n\n<code>❀Artist : </code><b><a href=\"https://t.me/chuangbian/\">{renote['user']['name']}</a></b>"
-                lines =  text.splitlines()
-                lines.insert(1, "\nCW: " + note.cw + "\n\n")
-                lines.insert(2, "<tg-spoiler>")
-                lines.insert(len(lines) - 1, "</tg-spoiler>")
-                note.text = ''.join(lines)
-            else: 
-                note.text = f"<code>❀Title : </code><b>{renote['text']}</b>\n\n<code>❀Artist : </code><b><a href=\"https://t.me/chuangbian/\">{renote['user']['name']}</a></b>"
+ 
+            text = (
+                f"<code>❀Title : </code><b>{renote['text']}</b>\n\n"
+                f"<code>❀Artist : </code><b><a href=\"https://t.me/ChuangBian/\">{renote['user']['name']}</a></b>"
+                f"► <b><a href=\"https://t.me/ChuangBian/5/\">ᴍɪꜱꜱᴋᴇʏ</a></b>"
+            )
+            note.text = text
 
-            note.files = []
-            for f in renote["files"]:
-                file = {
-                    "type": f["type"],
-                    "url": f["url"]
-                }
-                note.files.append(file)
+            note.files = [{"type": f["type"], "url": f["url"]} for f in renote["files"]]
             notes.append(note)
         else:
-            # normal note
             note = Note()
             note.replyId = n['replyId']
             note.cw = n['cw']
             note.createdAt = parser.parse(n["createdAt"])
-            if note.cw != None: 
-                lines =  n["text"].splitlines()
-                lines.insert(1, "\nCW: " + note.cw + "\n\n")
-                lines.insert(2, "<tg-spoiler>")
-                lines.insert(len(lines) - 2, "</tg-spoiler>\n\n")
-                note.text = "".join(lines)
-            else: 
-                note.text = n["text"]
-            note.files = []
-            for f in n["files"]:
-                file = {
-                    "type": f["type"],
-                    "url": f["url"]
-                }
-                note.files.append(file)
+
+            note.text = n["text"]
+
+            note.files = [{"type": f["type"], "url": f["url"]} for f in n["files"]]
             notes.append(note)
     return notes
