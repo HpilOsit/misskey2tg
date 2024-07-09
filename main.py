@@ -4,7 +4,7 @@ import logging
 import telegram
 import tempfile
 from environs import Env
-from datetime import *
+from datetime import datetime, timezone
 from time import sleep
 import asyncio
 
@@ -13,7 +13,6 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s',
                     level=logging.INFO)
 
 env = Env()
-# Read .env into os.environ
 env.read_env()
 
 TOKEN = env.str("BOT_TOKEN")
@@ -23,9 +22,7 @@ CHANNEL_ID = env.str("CHANNEL_ID")
 INTERVAL = env.int("INTERVAL", 300)
 COMPRESSION = env.bool("COMPRESSION", True)
 
-
 LATEST_NOTE_TIME = datetime.now().replace(tzinfo=timezone.utc)
-
 bot = telegram.Bot(token=TOKEN)
 
 
@@ -42,12 +39,12 @@ async def get_medias(files, temp_dir, spoiler):
         elif file["type"].startswith("video"):
             try:
                 transfered = await utils.transfer_video(file["url"], temp_dir, COMPRESSION)
-            except:
-                logging.error("Failed to transfer video. Falling back...")
+            except Exception as e:
+                logging.error(f"Failed to transfer video. Falling back... {e}")
                 medias.append(
-                telegram.InputMediaVideo(
-                    file["url"],
-                    has_spoiler=spoiler,
+                    telegram.InputMediaVideo(
+                        file["url"],
+                        has_spoiler=spoiler,
                     )
                 )
                 continue
@@ -55,7 +52,8 @@ async def get_medias(files, temp_dir, spoiler):
             vf = open(transfered, "rb")
             medias.append(
                 telegram.InputMediaVideo(
-                    vf
+                    vf,
+                    has_spoiler=spoiler,
                 )
             )
         else:
@@ -69,29 +67,26 @@ async def get_medias(files, temp_dir, spoiler):
 
 
 async def forward_new_notes(bot: telegram.Bot):
-    print(".")
     global LATEST_NOTE_TIME
     notes = misskey.get_notes(
         site=HOST,
         user_id=USERID,
     )
-    # forward new notes
     for n in reversed(notes):
-        if n.createdAt > LATEST_NOTE_TIME and n.replyId == None:
+        if n.createdAt > LATEST_NOTE_TIME and n.replyId is None:
             logging.info("New Note Detected.")
             LATEST_NOTE_TIME = n.createdAt
-            # forward
             if len(n.files) == 0:
                 await bot.send_message(
                     chat_id=CHANNEL_ID,
                     text=n.text,
-                    parse_mode=telegram.constants.ParseMode("HTML")
+                    parse_mode=telegram.constants.ParseMode.HTML
                 )
                 logging.info(
                     f"Forwarded a text note, content: {n.text[:10]}...")
             else:
                 with tempfile.TemporaryDirectory() as temp_dir:
-                    medias = await get_medias(n.files, temp_dir, n.cw != None)
+                    medias = await get_medias(n.files, temp_dir, n.cw is not None)
                     success = False
                     for i in range(3):
                         try:
@@ -99,21 +94,20 @@ async def forward_new_notes(bot: telegram.Bot):
                                 chat_id=CHANNEL_ID,
                                 media=medias,
                                 caption=n.text,
-                                parse_mode=telegram.constants.ParseMode("HTML"),
+                                parse_mode=telegram.constants.ParseMode.HTML,
                             )
                             success = True
                             break
                         except asyncio.TimeoutError:
                             logging.warning(
-                                f"Upload media group timeout! Retrying for {i} time(s).")
-                            if i == 3:
+                                f"Upload media group timeout! Retrying for {i+1} time(s).")
+                            if i == 2:
                                 logging.error(
                                     f"Failed to upload media! Content: {n.text[:10]}... with {len(medias)} medias")
                             continue
                     if success:
                         logging.info(
                             f"Forwarded a note with media, content: {n.text[:10]}... with {len(medias)} medias")
-    print("|")
 
 
 async def main():
