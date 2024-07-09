@@ -4,7 +4,7 @@ import logging
 import telegram
 import tempfile
 from environs import Env
-from datetime import *
+from datetime import datetime, timezone
 from time import sleep
 import asyncio
 
@@ -71,10 +71,10 @@ async def forward_new_notes(bot: telegram.Bot):
         user_id=USERID,
     )
     for n in reversed(notes):
-        if n.createdAt > LATEST_NOTE_TIME and n.replyId is None:
+        if n.createdAt > LATEST_NOTE_TIME and not n.replyId:
             logging.info("New Note Detected.")
             LATEST_NOTE_TIME = n.createdAt
-            if len(n.files) == 0:
+            if not n.files:
                 await bot.send_message(
                     chat_id=CHANNEL_ID,
                     text=n.text,
@@ -84,7 +84,7 @@ async def forward_new_notes(bot: telegram.Bot):
                     f"Forwarded a text note, content: {n.text[:10]}...")
             else:
                 with tempfile.TemporaryDirectory() as temp_dir:
-                    medias = await get_medias(n.files, temp_dir, n.cw is not None)
+                    medias = await get_medias(n.files, temp_dir, bool(n.cw))
                     success = False
                     for i in range(3):
                         try:
